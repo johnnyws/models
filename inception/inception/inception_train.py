@@ -23,6 +23,7 @@ from datetime import datetime
 import os.path
 import re
 import time
+import sys
 
 import numpy as np
 import tensorflow as tf
@@ -328,6 +329,7 @@ def train(dataset):
       restorer.restore(sess, FLAGS.pretrained_model_checkpoint_path)
       print('%s: Pre-trained model restored from %s' %
             (datetime.now(), FLAGS.pretrained_model_checkpoint_path))
+      sys.stdout.flush()
 
     # Start the queue runners.
     tf.train.start_queue_runners(sess=sess)
@@ -349,6 +351,7 @@ def train(dataset):
                       'sec/batch)')
         print(format_str % (datetime.now(), step, loss_value,
                             examples_per_sec, duration))
+        sys.stdout.flush()
 
       if step % 100 == 0:
         summary_str = sess.run(summary_op)

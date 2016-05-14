@@ -40,6 +40,26 @@ py_library(
 )
 
 py_library(
+    name = "cars_data",
+    srcs = [
+        "cars_data.py",
+    ],
+    deps = [
+        ":dataset",
+    ],
+)
+
+py_library(
+    name = "classify_data",
+    srcs = [
+        "classify_data.py",
+    ],
+    deps = [
+        ":dataset",
+    ],
+)
+
+py_library(
     name = "image_processing",
     srcs = [
         "image_processing.py",
@@ -76,6 +96,39 @@ py_binary(
     ],
     deps = [
         ":flowers_data",
+        ":inception_eval",
+    ],
+)
+
+py_binary(
+    name = "cars_eval",
+    srcs = [
+        "cars_eval.py",
+    ],
+    deps = [
+        ":cars_data",
+        ":inception_eval",
+    ],
+)
+
+py_binary(
+    name = "classify",
+    srcs = [
+        "classify.py",
+    ],
+    deps = [
+        ":classify_data",
+        ":inception_eval",
+    ],
+)
+
+py_binary(
+    name = "classify_server",
+    srcs = [
+        "classify_server.py",
+    ],
+    deps = [
+        ":classify_data",
         ":inception_eval",
     ],
 )
@@ -120,6 +173,17 @@ py_binary(
     ],
     deps = [
         ":flowers_data",
+        ":inception_train",
+    ],
+)
+
+py_binary(
+    name = "cars_train",
+    srcs = [
+        "cars_train.py",
+    ],
+    deps = [
+        ":cars_data",
         ":inception_train",
     ],
 )
