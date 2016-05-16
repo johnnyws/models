@@ -15,6 +15,7 @@ from inception import image_processing
 from inception import inception_model as inception
 
 from flask import Flask
+from flask import request
 app = Flask(__name__)
 
 class ImageCoder(object):
@@ -75,6 +76,13 @@ def _process_image(filename, coder):
 
   return image_data
 
+def _process_image_data(image_data, coder, is_png):
+  if is_png:
+    print('Converting PNG to JPEG')
+    image_data = coder.png_to_jpeg(image_data)
+
+  return image_data
+
 
 # load the model
 def setup_app(app):
@@ -120,13 +128,21 @@ def setup_app(app):
 sess, images_ph, logits = setup_app(app)
 coder = ImageCoder(sess)
 
-@app.route("/classify")
+@app.route("/image", methods = ['POST'])
+def image():
+  image_data = request.data
+  print(request.headers.get("Content-Type"))
+  return str(request.headers)
+
+@app.route("/classify", methods = ['POST'])
 def classify():
   start = time.time()
   # for testing
   #filename = "/home/ubuntu/src/tensorflow-models/inception/tmp/raw/1/bentley-continental-gt-matte-orange1.jpg"
-  filename = "/home/ubuntu/src/tensorflow-test/inception-cars/cars_test_labeled/105/00083.jpg"
-  image_data, height, width = _process_image(filename, coder)
+
+  image_data = request.data
+  image_type = request.headers.get("Content-Type")
+  image_data = _process_image_data(image_data, coder, image_type == "image/png")
 
   # image is a tensor
   image = image_processing.decode_jpeg(image_data)
@@ -136,13 +152,13 @@ def classify():
 
   image = sess.run(image)
 
-  prob = sess.run(logits, feed_dict={images_ph:[image]})[0]
+  logits_result = sess.run(logits, feed_dict={images_ph:[image]})[0]
   end = time.time()
-  print(end - start)
-  sorted_indexes = [i[0] for i in sorted(enumerate(prob), key=lambda x:x[1], reverse=True)]
+  sorted_indexes = [i[0] for i in sorted(enumerate(logits_result), key=lambda x:x[1], reverse=True)]
   for i in range(0, 5):
-    print('%d: %f' % (sorted_indexes[i], prob[sorted_indexes[i]]))
-  print(len(prob))
+    logit = logits_result[sorted_indexes[i]]
+    prob = 1 / (1 + math.exp(-logit))
+    print('%d: %f' % (sorted_indexes[i], prob))
 
   return "Hello World!"
 
